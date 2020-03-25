@@ -3,6 +3,7 @@ function getUserPreferences() {
     type: "cases",
     view: "total",
     regions: null,
+    filter: ["country"],
   };
   let params = getSearchParams();
 
@@ -95,18 +96,7 @@ function calculateValue(datesSet, idx, type, view) {
     return (total3EMA - total7EMA) / total;
   }
 
-  if (type.id == "active") {
-    if (day["recovered"]) {
-      return day["confirmed"] - day["deaths"] - day["recovered"];
-    } else {
-      return 0;
-    }
-  }
-  if (type.id == "cases") {
-    return day["confirmed"];
-  }
-
-  return day[type.id];
+  return day.value[type.id];
 }
 
 function narrowDataSet(sortedDataSet, userPreferences) {
@@ -126,6 +116,9 @@ function narrowDataSet(sortedDataSet, userPreferences) {
 }
 
 function formatValue(value, userPreferences) {
+  if (value === undefined) {
+    return NaN;
+  }
   let {view} = getTypeAndView(SETTINGS, userPreferences);
   
   return value.toLocaleString(undefined, { style: view.style });

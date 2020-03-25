@@ -131,14 +131,31 @@ function processRegionData(sortedDataSet, userPreferences) {
   let {type, view} = getTypeAndView(SETTINGS, userPreferences);
   let filterElement = document.getElementById("regionFilter");
 
-  let filter = filterElement.value;
+  let filterText = filterElement.value;
+
+  let typeFilter = userPreferences.filter;
 
   return sortedDataSet.filter(region => {
-    return filter.length == 0 || region.id.toLowerCase().includes(filter.toLowerCase());
+    if (region.meta.city && !typeFilter.includes("city")) {
+      return false;
+    }
+    if (region.meta.county && !typeFilter.includes("county")) {
+      return false;
+    }
+    if (region.meta.state && !typeFilter.includes("state")) {
+      return false;
+    }
+    if (region.meta.country && !typeFilter.includes("country")) {
+      return false;
+    }
+    return filterText.length == 0 || region.id.toLowerCase().includes(filterText.toLowerCase());
   }).map(region => {
     let value = calculateValue(region.dates, region.dates.length - 1, type, view);
     return {
       "id": region.id,
+      "country": region.meta.country,
+      "state": region.meta.state,
+      "county": region.meta.county,
       "value": formatValue(value, userPreferences),
     };
   });
@@ -174,7 +191,7 @@ function processData(sortedDataSet, userPreferences) {
 
 
 async function main() {
-  let dataSet = await fetch("./data/timeseries.json").then((response) => response.json());
+  let dataSet = await fetch("./data/timeseries-byLocation.json").then((response) => response.json());
 
   let userPreferences = getUserPreferences();
 
